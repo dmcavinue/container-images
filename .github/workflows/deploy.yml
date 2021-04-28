@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'apps/**/VERSION'      
   pull_request:
     branches:
       - master
+    paths:
+      - 'apps/**/VERSION'
 jobs:
   push:
     runs-on: ubuntu-latest
