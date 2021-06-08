@@ -1,6 +1,5 @@
 FROM alpine:3.13.5
 
-ENV DHCP_RANGE 192.168.56.2
 ENV MEMTEST_VERSION 5.01
 ENV SYSLINUX_VERSION 6.03
 ENV TMP_SYSLINUX_PATH /tmp/syslinux-"${SYSLINUX_VERSION}"
@@ -35,4 +34,3 @@ COPY etc/ /etc
 COPY tftpboot/ /var/lib/tftpboot
 
 ENTRYPOINT ["dnsmasq", "--no-daemon"]
-CMD ["--dhcp-range=${DHCP_RANGE},proxy"]
