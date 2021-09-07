@@ -3,6 +3,7 @@
 MINUTES=${MINUTES:-5}
 START_TIME=$(date -u -d "$date -${MINUTES} mins" +"%Y-%m-%dT%H:%M:%S")
 CURRENT_TIME=$(date -u -d "$date -0 mins" +"%Y-%m-%dT%H:%M:%S")
+OUTPUT_DIR=${OUTPUT_DIR:-"/download"}
 
 echo "host:${UNIFI_HOST}"
 
