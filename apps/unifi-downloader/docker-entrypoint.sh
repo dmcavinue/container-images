@@ -18,3 +18,5 @@ protect-archiver \
   --ignore-failed-downloads \
   --download-motion-heatmaps \
   ${OUTPUT_DIR}
+
+find ${OUTPUT_DIR} -type d -mtime +30 -exec rm -r "{}" \;
