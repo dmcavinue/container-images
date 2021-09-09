@@ -19,4 +19,4 @@ protect-archiver \
   --download-motion-heatmaps \
   ${OUTPUT_DIR}
 
-find ${OUTPUT_DIR} -type d -mtime +30 -exec rm -r "{}" \;
+find ${OUTPUT_DIR} -type d -mtime +7 -exec rm -r "{}" \;
