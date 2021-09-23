@@ -1,6 +1,6 @@
 FROM golang:1.15.8-alpine
 
-RUN apk add --no-cache git 
+RUN apk add --no-cache git rtl-sdr
 
 # ENV:
 # RTLAMR_FORMAT=json
