@@ -20,4 +20,5 @@ RUN go get -v github.com/bemasher/rtlamr-collect
 
 COPY docker-entrypoint.sh /
 RUN chmod +x /docker-entrypoint.sh
+WORKDIR /go/bin
 ENTRYPOINT ["/docker-entrypoint.sh"]
