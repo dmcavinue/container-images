@@ -13,8 +13,6 @@ FROM golang:1.15.8-alpine
 # RTLAMR_FORMAT=json
 # RTLAMR_FILTERID=000000000
 
-RUN apk add --no-cache git rtl-sdr
-
 RUN go get -v github.com/bemasher/rtlamr
 RUN go get -v github.com/bemasher/rtlamr-collect
 
