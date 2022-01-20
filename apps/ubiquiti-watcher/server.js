@@ -78,13 +78,13 @@ if(mqttHost) {
             console.log(util.format('%s/%s : %s', mqttTopic, product.toLowerCase(), Date.now()));
             if(mqttHost) {
               client.on('connect', () => {
-              client.publish(util.format('%s/%s', mqttTopic, product.toLowerCase()), Date.now(), { qos: 0, retain: false }, (error) => {
-                if (error) {
-                  console.error(error)
-                }
+                client.publish(util.format('%s/products/%s', mqttTopic, product.toLowerCase()), Date.now(), { qos: 0, retain: false }, (error) => {
+                  if (error) {
+                    console.error(error)
+                  }
+                })
               })
-              })
-            }            
+            }
         }
         var functionToInject = function(){
             return document.querySelector("#app").__vue__.appData.cartAccessories.map(a=>a.title);
@@ -99,10 +99,19 @@ if(mqttHost) {
         }
         console.log((foundItems.length?"":"Desired product(s) not found. ") + 
             "Waiting " +  toWait + "s to check again. ");
-        // if(showAllAvailableFilters.length){
-        //     console.log("Available Products: ");
-        //     console.log(data.filter(a=>showAllAvailableFilters.some(b=>a.startsWith(b))));
-        // }
+        if(showAllAvailableFilters.length){
+          console.log("Available Products: ");
+          console.log(data.filter(a=>showAllAvailableFilters.some(b=>a.startsWith(b))));
+        }
+        if(mqttHost) {
+          client.on('connect', () => {
+            client.publish(util.format('%s/timestamp', mqttTopic), Date.now(), { qos: 0, retain: false }, (error) => {
+              if (error) {
+                console.error(error)
+              }
+            })
+          })
+        }            
         setTimeout(getAvailable, toWait*1000);
     }
     getAvailable();
