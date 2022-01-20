@@ -77,8 +77,8 @@ if(mqttHost) {
         var success = function(product){
             console.log(util.format('%s/%s : %s', mqttTopic, product.toLowerCase(), Date.now()));
             if(mqttHost) {
-              client.on('connect', () => {
-                client.publish(util.format('%s/products/%s', mqttTopic, product.toLowerCase()), Date.now(), { qos: 0, retain: false }, (error) => {
+              mqttClient.on('connect', () => {
+                mqttClient.publish(util.format('%s/products/%s', mqttTopic, product.toLowerCase()), Date.now(), { qos: 0, retain: false }, (error) => {
                   if (error) {
                     console.error(error)
                   }
@@ -104,8 +104,8 @@ if(mqttHost) {
           console.log(data.filter(a=>showAllAvailableFilters.some(b=>a.startsWith(b))));
         }
         if(mqttHost) {
-          client.on('connect', () => {
-            client.publish(util.format('%s/timestamp', mqttTopic), Date.now(), { qos: 0, retain: false }, (error) => {
+          mqttClient.on('connect', () => {
+            mqttClient.publish(util.format('%s/timestamp', mqttTopic), Date.now(), { qos: 0, retain: false }, (error) => {
               if (error) {
                 console.error(error)
               }
