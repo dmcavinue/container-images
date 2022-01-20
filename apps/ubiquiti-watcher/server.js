@@ -73,8 +73,14 @@ const mqttClient = mqtt.connect(mqttConnectUrl, {
         });        
 
         var success = function(product){
-          console.log(util.format('%s/products/%s : %s', mqttTopic, product.toLowerCase(), Date.now().toString()));
-          mqttClient.publish(util.format('%s/products/%s', mqttTopic, product.toLowerCase()), Date.now().toString(), { qos: 0, retain: false }, (error) => {
+          console.log(util.format('%s/products/%s/in_stock : true', mqttTopic, product.toLowerCase()));
+          console.log(util.format('%s/products/%s/timestamp : %s', mqttTopic, product.toLowerCase(), Date.now().toString()));
+          mqttClient.publish(util.format('%s/products/%s/timestamp', mqttTopic, product.toLowerCase()), Date.now().toString(), { qos: 0, retain: false }, (error) => {
+            if (error) {
+              console.error(error)
+            }
+          })
+          mqttClient.publish(util.format('%s/products/%s/in_stock', mqttTopic, product.toLowerCase()), "true", { qos: 0, retain: false }, (error) => {
             if (error) {
               console.error(error)
             }
