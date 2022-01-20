@@ -47,16 +47,14 @@ if(process.env.DESIRED_PRODUCTS) {
 }
 
 // MQTT Client
-if(mqttHost) {
-  const mqttClient = mqtt.connect(mqttConnectUrl, {
-    mqttClientId,
-    clean: true,
-    connectTimeout: 4000,
-    username: mqttUsername,
-    password: mqttPassword,
-    reconnectPeriod: 1000,
-  })
-}
+const mqttClient = mqtt.connect(mqttConnectUrl, {
+  mqttClientId,
+  clean: true,
+  connectTimeout: 4000,
+  username: mqttUsername,
+  password: mqttPassword,
+  reconnectPeriod: 1000,
+})
 
 (async () => {
     const browser = await puppeteer.launch({
@@ -76,15 +74,14 @@ if(mqttHost) {
 
         var success = function(product){
             console.log(util.format('%s/%s : %s', mqttTopic, product.toLowerCase(), Date.now()));
-            if(mqttHost) {
-              mqttClient.on('connect', () => {
-                mqttClient.publish(util.format('%s/products/%s', mqttTopic, product.toLowerCase()), Date.now(), { qos: 0, retain: false }, (error) => {
-                  if (error) {
-                    console.error(error)
-                  }
-                })
+            mqttClient.on('connect', () => {
+              mqttClient.publish(util.format('%s/products/%s', mqttTopic, product.toLowerCase()), Date.now(), { qos: 0, retain: false }, (error) => {
+                if (error) {
+                  console.error(error)
+                }
               })
-            }
+            })
+            
         }
         var functionToInject = function(){
             return document.querySelector("#app").__vue__.appData.cartAccessories.map(a=>a.title);
@@ -103,15 +100,13 @@ if(mqttHost) {
           console.log("Available Products: ");
           console.log(data.filter(a=>showAllAvailableFilters.some(b=>a.startsWith(b))));
         }
-        if(mqttHost) {
-          mqttClient.on('connect', () => {
-            mqttClient.publish(util.format('%s/timestamp', mqttTopic), Date.now(), { qos: 0, retain: false }, (error) => {
-              if (error) {
-                console.error(error)
-              }
-            })
+        mqttClient.on('connect', () => {
+          mqttClient.publish(util.format('%s/timestamp', mqttTopic), Date.now(), { qos: 0, retain: false }, (error) => {
+            if (error) {
+              console.error(error)
+            }
           })
-        }            
+        })
         setTimeout(getAvailable, toWait*1000);
     }
     getAvailable();
