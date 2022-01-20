@@ -47,7 +47,7 @@ if(process.env.DESIRED_PRODUCTS) {
 }
 
 // MQTT Client
-const mqttClient = mqtt.connect(mqttConnectUrl, {
+const client = mqtt.connect(mqttConnectUrl, {
   mqttClientId,
   clean: true,
   connectTimeout: 4000,
@@ -74,8 +74,8 @@ const mqttClient = mqtt.connect(mqttConnectUrl, {
 
         var success = function(product){
             console.log(util.format('%s/%s : %s', mqttTopic, product.toLowerCase(), Date.now()));
-            mqttClient.on('connect', () => {
-              mqttClient.publish(util.format('%s/products/%s', mqttTopic, product.toLowerCase()), Date.now(), { qos: 0, retain: false }, (error) => {
+            client.on('connect', () => {
+              client.publish(util.format('%s/products/%s', mqttTopic, product.toLowerCase()), Date.now(), { qos: 0, retain: false }, (error) => {
                 if (error) {
                   console.error(error)
                 }
@@ -100,8 +100,8 @@ const mqttClient = mqtt.connect(mqttConnectUrl, {
           console.log("Available Products: ");
           console.log(data.filter(a=>showAllAvailableFilters.some(b=>a.startsWith(b))));
         }
-        mqttClient.on('connect', () => {
-          mqttClient.publish(util.format('%s/timestamp', mqttTopic), Date.now(), { qos: 0, retain: false }, (error) => {
+        client.on('connect', () => {
+          client.publish(util.format('%s/timestamp', mqttTopic), Date.now(), { qos: 0, retain: false }, (error) => {
             if (error) {
               console.error(error)
             }
