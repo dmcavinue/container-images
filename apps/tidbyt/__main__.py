@@ -132,4 +132,4 @@ def data():
     return jsonify({"color":color,"size":size,"Text":text,"Tidbyt-reply":data.decode("utf-8")})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run('0.0.0.0')
