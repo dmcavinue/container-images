@@ -10,6 +10,7 @@ import base64
 from io import BytesIO
 
 import http.client
+import os
  
 def pil_base64(image):
   img_buffer = BytesIO()
@@ -93,6 +94,9 @@ def not_found(error):
 @app.route('/msg', methods = ['POST'])
 def data():
 
+    tidbyt_deviceid = os.getenv('TIDBYT_DEVICEID')
+    tidbyt_token = os.getenv('TIDBYT_TOKEN')
+
     text = request.args.get('text')
     if len(text) > 34:
         text='TOO BIG'
@@ -109,7 +113,7 @@ def data():
     #API: token 
     headers = {
         'Content-Type': "application/json",
-        'Authorization': "Bearer [TOKEN HERE]"
+        'Authorization': "Bearer {}".format(tidbyt_token)
         }
 
     #API: Image-base64 encoded, installationID if you want to save applet, background deploy
@@ -118,7 +122,7 @@ def data():
     #API: Set address
     conn = http.client.HTTPSConnection("api.tidbyt.com")
     #API: Post to Tidbyt API DeviceID, payload and header
-    conn.request("POST", "/v0/devices/[DEVICEID HERE]/push", payload, headers)
+    conn.request("POST", "/v0/devices/{}/push".format(tidbyt_deviceid), payload, headers)
 
     #API: Response captured    
     res = conn.getresponse()
@@ -128,4 +132,4 @@ def data():
     return jsonify({"color":color,"size":size,"Text":text,"Tidbyt-reply":data.decode("utf-8")})
 
 if __name__ == '__main__':
-    app.run('[LOCAL IP HERE]',debug=True)
+    app.run(debug=True)
