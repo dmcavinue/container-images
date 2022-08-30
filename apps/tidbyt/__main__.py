@@ -115,9 +115,9 @@ def data():
     headers = {
         'Content-Type': "application/json",
         'Authorization': "Bearer {}".format(tidbyt_token)
-        }
+    }
 
-    payload = "{\n\"image\": \"{}\",\n  \"installationID\": \"{}\",\n  \"background\": {}\n}".format(image_encoded, installation_id, str(background))
+    payload = "{\n\"image\":\"" + image_encoded +"\",\n  \"installationID\": \""+ installation_id +"\",\n  \"background\": "+ background +"\n}"
 
     conn = http.client.HTTPSConnection(tidbyt_url)
     conn.request("POST", "/v0/devices/{}/push".format(tidbyt_deviceid), payload, headers)
