@@ -11,7 +11,7 @@ from io import BytesIO
 
 import http.client
 import os
- 
+
 def pil_base64(image):
   img_buffer = BytesIO()
   image.save(img_buffer, format='gif')
@@ -32,7 +32,7 @@ def determine_text_size(text: str):
         size=11
     elif len(text) < 10:
         size=10
-    elif len(text) < 12: 
+    elif len(text) < 12:
         size=9
     elif len(text) < 14:
         size=15
@@ -63,13 +63,13 @@ def check_color(color):
     except ValueError: # The color code was not found
         return "red"
 
-def create_image(text: str, size: int, color: str):    
+def create_image(text: str, size: int, color: str):
     # Create Image
     img = Image.new('RGB', (64, 32), color = 'black')
     # Load custom font
     font = ImageFont.truetype(font='SourceCodePro-Bold.ttf', size=size)
     # Create DrawText object
-    draw = ImageDraw.Draw(im=img)    
+    draw = ImageDraw.Draw(im=img)
     # Calculate the average length of a single character of our font.
     avg_char_width = sum(font.getsize(char)[0] for char in ascii_letters) / len(ascii_letters)
     # Translate this average length into a character count
@@ -82,7 +82,6 @@ def create_image(text: str, size: int, color: str):
 
 app = Flask(__name__)
 
-
 @app.errorhandler(400)
 def bad_request(error):
     return make_response(jsonify( { 'error': 'Bad request' } ), 400)
@@ -90,45 +89,42 @@ def bad_request(error):
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify( { 'error': 'Not found' } ), 404)
-    
+
 @app.route('/msg', methods = ['POST'])
 def data():
 
+    tidbyt_url = os.getenv('TIDBYT_URL', 'api.tidbyt.com')
     tidbyt_deviceid = os.getenv('TIDBYT_DEVICEID')
     tidbyt_token = os.getenv('TIDBYT_TOKEN')
 
-    text = request.args.get('text')
+    text = request.args.get('text', default='', type=str)
+    background = request.args.get('background', default=False, type=bool)
+    installation_id = request.args.get('installation_id', default='', type=str)
+
     if len(text) > 34:
-        text='TOO BIG'
+        text=''
+
     size=determine_text_size(text)
-    color = request.args.get('color')
+    color = request.args.get('color', default='white')
     color = check_color(color)
-    img =  create_image(text, size, color) 
-    #img.show()
-    
-    #encode image
+    img =  create_image(text, size, color)
+
     image_base64=pil_base64(img)
     image_encoded=image_base64.decode('utf-8')
-    
-    #API: token 
+
     headers = {
         'Content-Type': "application/json",
         'Authorization': "Bearer {}".format(tidbyt_token)
         }
 
-    #API: Image-base64 encoded, installationID if you want to save applet, background deploy
-    payload = "{\n\"image\":\"" + image_encoded +"\",\n  \"installationID\": \"\",\n  \"background\": false\n}"
+    payload = "{\n\"image\": \"{}\",\n  \"installationID\": \"{}\",\n  \"background\": {}\n}".format(image_encoded, installation_id, str(background))
 
-    #API: Set address
-    conn = http.client.HTTPSConnection("api.tidbyt.com")
-    #API: Post to Tidbyt API DeviceID, payload and header
+    conn = http.client.HTTPSConnection(tidbyt_url)
     conn.request("POST", "/v0/devices/{}/push".format(tidbyt_deviceid), payload, headers)
 
-    #API: Response captured    
     res = conn.getresponse()
     data = res.read()
 
-    #Local API Response        
     return jsonify({"color":color,"size":size,"Text":text,"Tidbyt-reply":data.decode("utf-8")})
 
 if __name__ == '__main__':
