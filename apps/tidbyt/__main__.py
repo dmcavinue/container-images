@@ -98,7 +98,7 @@ def data():
     tidbyt_token = os.getenv('TIDBYT_TOKEN')
 
     text = request.args.get('text', default='', type=str)
-    background = request.args.get('background', default=False, type=bool)
+    background = request.args.get('background', default='false', type=str)
     installation_id = request.args.get('installation_id', default='', type=str)
 
     if len(text) > 34:
