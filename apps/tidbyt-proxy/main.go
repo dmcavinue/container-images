@@ -1,15 +1,22 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
+	"text/template"
 
 	"github.com/gorilla/mux"
 	flags "github.com/jessevdk/go-flags"
 	log "github.com/sirupsen/logrus"
+)
+
+const (
+	templatePath = "./templates/*.star"
+	tmpDir       = "/tmp"
 )
 
 var config struct {
@@ -18,6 +25,8 @@ var config struct {
 
 	Debug bool `long:"debug-mode" env:"DEBUG_MODE" description:"Debug Mode"`
 }
+
+var templates *template.Template
 
 type API struct {
 	Host string `long:"http-ip" env:"HTTP_IP" description:"HTTP Server IP" default:"0.0.0.0"`
@@ -49,6 +58,9 @@ func init() {
 
 	// Only log the warning severity or above.
 	log.SetLevel(log.WarnLevel)
+
+	// load all star templates
+	templates = template.Must(template.ParseGlob(templatePath))
 }
 
 func main() {
@@ -117,11 +129,28 @@ func notifyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	params.notifyDefaults()
 
-	// Image generate and tidbyt API logic goes here
+	// create temporary template file
+	templateFile, tmplErr := ioutil.TempFile(tmpDir, "tidbyt")
+	if tmplErr != nil {
+		log.Fatal(tmplErr)
+	}
+
+	// render from template
+	renderErr := templates.ExecuteTemplate(templateFile, "notify", params)
+	if renderErr != nil {
+		log.Print(renderErr)
+	}
+	log.Debugf("rendered template to path %s", templateFile.Name())
+
+	// render and push
+	if _, err := exec.LookPath("pixlet"); err != nil {
+		log.Printf("pixlet binary doesn't exist")
+	} else {
+		log.Printf("pixlet binary exists")
+	}
+
+	// cleanup
+	//defer os.Remove(templateFile.Name())
 
 	w.WriteHeader(http.StatusOK)
-	err := json.NewEncoder(w).Encode(params)
-	if err != nil {
-		fmt.Printf("%+v", err)
-	}
 }
