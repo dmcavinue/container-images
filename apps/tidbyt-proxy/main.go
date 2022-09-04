@@ -15,6 +15,7 @@ import (
 )
 
 const (
+	pixletBinary = "pixlet"
 	templatePath = "./templates/*.star"
 	tmpDir       = "/tmp"
 )
@@ -143,10 +144,17 @@ func notifyHandler(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("rendered template to path %s", templateFile.Name())
 
 	// render and push
-	if _, err := exec.LookPath("pixlet"); err != nil {
+	if _, err := exec.LookPath(pixletBinary); err != nil {
 		log.Printf("pixlet binary doesn't exist")
 	} else {
 		log.Printf("pixlet binary exists")
+
+		renderOutput, err := exec.Command(pixletBinary, "render", templateFile.Name()).Output()
+		if err != nil {
+			log.Println(err.Error())
+		}
+		log.Println(string(renderOutput))
+
 	}
 
 	// cleanup
