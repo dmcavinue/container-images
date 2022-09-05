@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strconv"
 	"text/template"
 
 	"github.com/gorilla/mux"
