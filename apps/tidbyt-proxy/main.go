@@ -135,13 +135,14 @@ func notifyHandler(w http.ResponseWriter, r *http.Request) {
 	if tmplErr != nil {
 		log.Fatal(tmplErr)
 	}
+	inputFile := fmt.Sprintf("%s.star", templateFile.Name())
 
 	// render from template
 	renderErr := templates.ExecuteTemplate(templateFile, "notify", params)
 	if renderErr != nil {
 		log.Print(renderErr)
 	}
-	log.Debugf("rendered template to path %s", templateFile.Name())
+	log.Debugf("rendered template to path %s", inputFile)
 
 	// render and push
 	if _, err := exec.LookPath(pixletBinary); err != nil {
@@ -151,7 +152,7 @@ func notifyHandler(w http.ResponseWriter, r *http.Request) {
 
 		outputFile := fmt.Sprintf("%s.webp", templateFile.Name())
 		// render webp file from star template file
-		renderOutput, err := exec.Command(pixletBinary, "render", templateFile.Name(), outputFile).Output()
+		renderOutput, err := exec.Command(pixletBinary, "render", inputFile, outputFile).Output()
 		if err != nil {
 			log.Println(err.Error())
 		}
@@ -165,7 +166,7 @@ func notifyHandler(w http.ResponseWriter, r *http.Request) {
 			log.Debugf("push result:\n %s", string(pushOutput))
 		}
 		// cleanup template/render files
-		defer os.Remove(templateFile.Name())
+		defer os.Remove(inputFile)
 		defer os.Remove(outputFile)
 	}
 
