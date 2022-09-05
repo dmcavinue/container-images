@@ -10,7 +10,7 @@ def main():
             child = render.Marquee(
                 width=62,
                 height=2,
-                child=render.Text(content="{{ .Text }}", color="{{ .TextColor }}", align="center"),
+                child=render.Text(content="{{ .Text }}", color="{{ .TextColor }}", size="{{ .TextSize }}", align="center"),
                 offset_start=5,
                 offset_end=32,
             ),
