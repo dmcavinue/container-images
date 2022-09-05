@@ -1,6 +1,7 @@
 package main
 
 import (
+        "encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -41,10 +42,10 @@ type Tidbyt struct {
 }
 
 type notifyParameters struct {
-	Text            string // Text to send in notifcation
-	TextColor       string // Text Color to set. Default: White
-	BackgroundColor string // Background color to set: Default: Black
-	TextSize        int    // Test font size to set. Default: 14
+	Text            string `json:"text"`      // Text to send in notifcation
+	TextColor       string `json:"textcolor"` // Text Color to set. Default: White
+	BackgroundColor string `json:"bgcolor"`   // Background color to set: Default: Black
+	TextSize        int    `json:"textsize"`  // Test font size to set. Default: 14
 }
 
 var parser = flags.NewParser(&config, flags.Default)
@@ -116,18 +117,14 @@ func healthcheck(w http.ResponseWriter, r *http.Request) {
 func notifyHandler(w http.ResponseWriter, r *http.Request) {
 	log.Debug("notifyHandler:\nrequest:\n%+v", r)
 
-	params := notifyParameters{
-		Text:            r.URL.Query().Get("text"),
-		TextColor:       r.URL.Query().Get("textcolor"),
-		BackgroundColor: r.URL.Query().Get("bgcolor"),
-	}
-	var strErr error
-	if r.URL.Query().Get("textsize") != "" {
-		params.TextSize, strErr = strconv.Atoi(r.URL.Query().Get("textsize"))
-		if strErr != nil {
-			fmt.Printf("Error: %+v", strErr)
-		}
-	}
+        var params notifyParamaters
+
+        err := json.NewDecoder(r.Body).Decode(&params)
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusBadRequest)
+            return
+        }
+
 	params.notifyDefaults()
 
 	// create temporary template file
