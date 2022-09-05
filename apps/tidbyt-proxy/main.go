@@ -97,13 +97,13 @@ func (n *notifyParameters) notifyDefaults() {
 
 	// setting default values if no values present
 	if n.TextColor == "" {
-		n.TextColor = "white"
+		n.TextColor = "#fff"
 	}
 	if n.TextSize == 0 {
 		n.TextSize = 14
 	}
 	if n.BackgroundColor == "" {
-		n.BackgroundColor = "black"
+		n.BackgroundColor = "#000"
 	}
 }
 
@@ -156,6 +156,7 @@ func notifyHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println(err.Error())
 		}
 		log.Debugf("render result:\n %s", string(renderOutput))
+
 		// push rendered webp to target device if provided
 		if config.ApiKey != "" && config.DeviceID != "" {
 			pushOutput, err := exec.Command(pixletBinary, "push", "--api-token", config.ApiKey, config.DeviceID, outputFile).Output()
