@@ -131,7 +131,7 @@ func notifyHandler(w http.ResponseWriter, r *http.Request) {
 	params.notifyDefaults()
 
 	// create temporary template file
-	templateFile, tmplErr := ioutil.TempFile(tmpDir, "tidbyt")
+	templateFile, tmplErr := ioutil.TempFile(tmpDir, "tidbyt-notify")
 	if tmplErr != nil {
 		log.Fatal(tmplErr)
 	}
@@ -145,20 +145,29 @@ func notifyHandler(w http.ResponseWriter, r *http.Request) {
 
 	// render and push
 	if _, err := exec.LookPath(pixletBinary); err != nil {
-		log.Printf("pixlet binary doesn't exist")
+		log.Debug("pixlet binary doesn't exist")
 	} else {
-		log.Printf("pixlet binary exists")
+		log.Debug("pixlet binary exists")
 
-		renderOutput, err := exec.Command(pixletBinary, "render", templateFile.Name()).Output()
+		outputFile := fmt.Sprintf("%s.webp", templateFile.Name())
+		// render webp file from star template file
+		renderOutput, err := exec.Command(pixletBinary, "render", templateFile.Name(), outputFile).Output()
 		if err != nil {
 			log.Println(err.Error())
 		}
-		log.Println(string(renderOutput))
-
+		log.Debugf("render result:\n %s", string(renderOutput))
+		// push rendered webp to target device if provided
+		if config.ApiKey != "" && config.DeviceID != "" {
+			pushOutput, err := exec.Command(pixletBinary, "push", "--api-token", config.ApiKey, config.DeviceID, outputFile).Output()
+			if err != nil {
+				log.Println(err.Error())
+			}
+			log.Debugf("push result:\n %s", string(pushOutput))
+		}
+		// cleanup template/render files
+		defer os.Remove(templateFile.Name())
+		defer os.Remove(outputFile)
 	}
-
-	// cleanup
-	//defer os.Remove(templateFile.Name())
 
 	w.WriteHeader(http.StatusOK)
 }
