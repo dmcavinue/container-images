@@ -7,7 +7,7 @@ def main():
             width = 64,
             height = 32,
             color = "{{ .BackgroundColor }}",
-            child = render.Marquee(TextColor
+            child = render.Marquee(
                 width=62,
                 height=2,
                 child=render.Text(content="{{ .Text }}", color="{{ .TextColor }}"),
