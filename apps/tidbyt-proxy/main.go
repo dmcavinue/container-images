@@ -117,7 +117,7 @@ func healthcheck(w http.ResponseWriter, r *http.Request) {
 func notifyHandler(w http.ResponseWriter, r *http.Request) {
 	log.Debug("notifyHandler:\nrequest:\n%+v", r)
 
-        var params notifyParamaters
+        var params notifyParameters
 
         err := json.NewDecoder(r.Body).Decode(&params)
         if err != nil {
