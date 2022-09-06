@@ -1,13 +1,13 @@
 package main
 
 import (
-        "encoding/json"
+	"encoding/json"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
-	"text/template"
 
 	"github.com/gorilla/mux"
 	flags "github.com/jessevdk/go-flags"
@@ -27,7 +27,7 @@ var config struct {
 	Debug bool `long:"debug-mode" env:"DEBUG_MODE" description:"Debug Mode"`
 }
 
-var templates *template.Template
+var availableTemplates *template.Template
 
 type API struct {
 	Host string `long:"http-ip" env:"HTTP_IP" description:"HTTP Server IP" default:"0.0.0.0"`
@@ -40,11 +40,16 @@ type Tidbyt struct {
 	DeviceID string `long:"device-id" env:"DEVICE_ID" description:"Tidbyt Device ID"`
 }
 
-type notifyParameters struct {
-	Text            string `json:"text"`      // Text to send in notifcation
+type notify struct {
+	Text            string `json:"text"`      // Text to send in notification
 	TextColor       string `json:"textcolor"` // Text Color to set. Default: White
 	BackgroundColor string `json:"bgcolor"`   // Background color to set: Default: Black
 	TextSize        int    `json:"textsize"`  // Test font size to set. Default: 14
+}
+
+// templates : parameter definitions for all available star templates
+type templates struct {
+	Notify notify
 }
 
 var parser = flags.NewParser(&config, flags.Default)
@@ -61,7 +66,7 @@ func init() {
 	log.SetLevel(log.WarnLevel)
 
 	// load all star templates
-	templates = template.Must(template.ParseGlob(templatePath))
+	availableTemplates = template.Must(template.ParseGlob(templatePath))
 }
 
 func main() {
@@ -92,79 +97,85 @@ func main() {
 	}
 }
 
-// notifyDefaults: Set parameter defaults
-func (n *notifyParameters) notifyDefaults() {
-
-	// setting default values if no values present
-	if n.TextColor == "" {
-		n.TextColor = "#fff"
-	}
-	if n.TextSize == 0 {
-		n.TextSize = 14
-	}
-	if n.BackgroundColor == "" {
-		n.BackgroundColor = "#000"
-	}
-}
-
 // healthcheck: simple healthcheck
 func healthcheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// notifyHandler: send notification to tidbyt device
+// parameterDefaults: Set parameter defaults
+func parameterDefaults(p interface{}) {
+
+	switch v := p.(type) {
+	case notify:
+		// setting default values if no values present
+		if v.TextColor == "" {
+			v.TextColor = "#fff"
+		}
+		if v.TextSize == 0 {
+			v.TextSize = 14
+		}
+		if v.BackgroundColor == "" {
+			v.BackgroundColor = "#000"
+		}
+	}
+}
+
+// notifyHandler: send simple text notification to tidbyt device
 func notifyHandler(w http.ResponseWriter, r *http.Request) {
-	log.Debug("notifyHandler:\nrequest:\n%+v", r)
+	log.Trace("notifyHandler:\nrequest:\n%+v", r)
 
-        var params notifyParameters
+	var templates templates
 
-        err := json.NewDecoder(r.Body).Decode(&params)
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusBadRequest)
-            return
-        }
+	err := json.NewDecoder(r.Body).Decode(&templates.Notify)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	params.notifyDefaults()
+	// set sane defaults for unset parameters
+	parameterDefaults(templates.Notify)
 
 	// create temporary template file
-	templateFile, tmplErr := ioutil.TempFile(tmpDir, "tidbyt-notify*.star")
+	templateFile, tmplErr := ioutil.TempFile(tmpDir, "tidbyt*.star")
 	if tmplErr != nil {
 		log.Fatal(tmplErr)
+		return
 	}
 
 	// render from template
-	renderErr := templates.ExecuteTemplate(templateFile, "notify", params)
+	renderErr := availableTemplates.ExecuteTemplate(templateFile, "notify", templates.Notify)
 	if renderErr != nil {
 		log.Print(renderErr)
+		return
 	}
 	log.Debugf("rendered template to path %s", templateFile.Name())
 
-	// render and push
+	// render webp file from star template file and push via pixlet
 	if _, err := exec.LookPath(pixletBinary); err != nil {
 		log.Debug("pixlet binary doesn't exist")
-	} else {
-		log.Debug("pixlet binary exists")
+		return
+	}
+	outputFile := fmt.Sprintf("%s.webp", templateFile.Name())
+	renderOutput, err := exec.Command(pixletBinary, "render", templateFile.Name(), "--output", outputFile).Output()
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	log.Debugf("render result:\n %s", string(renderOutput))
 
-		outputFile := fmt.Sprintf("%s.webp", templateFile.Name())
-		// render webp file from star template file
-		renderOutput, err := exec.Command(pixletBinary, "render", templateFile.Name(), "--output", outputFile).Output()
+	// push rendered webp to target device if provided
+	if config.ApiKey != "" && config.DeviceID != "" {
+		pushOutput, err := exec.Command(pixletBinary, "push", "--api-token", config.ApiKey, config.DeviceID, outputFile).Output()
 		if err != nil {
 			log.Println(err.Error())
+			return
 		}
-		log.Debugf("render result:\n %s", string(renderOutput))
-
-		// push rendered webp to target device if provided
-		if config.ApiKey != "" && config.DeviceID != "" {
-			pushOutput, err := exec.Command(pixletBinary, "push", "--api-token", config.ApiKey, config.DeviceID, outputFile).Output()
-			if err != nil {
-				log.Println(err.Error())
-			}
-			log.Debugf("push result:\n %s", string(pushOutput))
-		}
-		// cleanup template/render files
-		defer os.Remove(templateFile.Name())
-		defer os.Remove(outputFile)
+		log.Debugf("push result:\n %s", string(pushOutput))
 	}
+
+	// cleanup template/render files
+	defer os.Remove(templateFile.Name())
+	defer os.Remove(outputFile)
 
 	w.WriteHeader(http.StatusOK)
 }
