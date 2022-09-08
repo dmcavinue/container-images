@@ -1,0 +1,45 @@
+{
+	"info": {
+		"_postman_id": "95d80ab6-df63-4cb6-893a-57878f3fcea0",
+		"name": "tidbyt-proxy",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "notify",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "image/jpeg",
+						"type": "default",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"text\": \"bax\",\r\n    \"textcolor\": \"#ff0000\",\r\n    \"bgcolor\": \"#000000\",\r\n    \"returnimage\": true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/notify",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"notify"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
