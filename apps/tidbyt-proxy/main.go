@@ -46,6 +46,7 @@ type notify struct {
 	TextColor       string `json:"textcolor"`   // Text Color to set. Default: White
 	BackgroundColor string `json:"bgcolor"`     // Background color to set: Default: Black
 	TextSize        int    `json:"textsize"`    // Test font size to set. Default: 14
+	Icon            string `json:"icon"`        // Icon to send in notification by name
 	ReturnImage     bool   `json:"returnimage"` // Return resulting image in response
 }
 
@@ -66,9 +67,6 @@ func init() {
 
 	// Only log the warning severity or above.
 	log.SetLevel(log.WarnLevel)
-
-	// load all star templates
-	availableTemplates = template.Must(template.ParseGlob(templatePath))
 }
 
 func main() {
@@ -124,7 +122,10 @@ func parameterDefaults(p interface{}) {
 
 // notifyHandler: send simple text notification to tidbyt device
 func notifyHandler(w http.ResponseWriter, r *http.Request) {
-	log.Trace("notifyHandler:\nrequest:\n%+v", r)
+	log.Tracef("notifyHandler:\nrequest:\n%+v", r)
+
+	// load all star templates
+	availableTemplates = template.Must(template.ParseGlob(templatePath))
 
 	var templates templates
 	timestamp := time.Now().Unix()
