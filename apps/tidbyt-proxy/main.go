@@ -160,23 +160,14 @@ func notifyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	outputFile := fmt.Sprintf("%s-%d.gif", templateFile.Name(), timestamp)
-	renderOutput, err := exec.Command(pixletBinary, "render", templateFile.Name(), "--output", outputFile, "--gif").Output()
+	renderOutput, err := exec.Command(pixletBinary, "render", templateFile.Name(), "--output", outputFile, "--gif").CombinedOutput()
+	log.Debugf("%s", string(renderOutput))
 	if err != nil {
 		log.Println(err.Error())
 		return
 	}
-	log.Debugf("render result:\n %s", string(renderOutput))
 
-	// push rendered webp to target device if provided
-	if config.ApiKey != "" && config.DeviceID != "" {
-		pushOutput, err := exec.Command(pixletBinary, "push", "--api-token", config.ApiKey, config.DeviceID, outputFile).Output()
-		if err != nil {
-			log.Println(err.Error())
-			return
-		}
-		log.Debugf("push result:\n %s", string(pushOutput))
-	}
-
+	// if returnimage: true, return the result in the response
 	if templates.Notify.ReturnImage {
 		w.Header().Set("Content-Type", "image/jpeg")
 		img, err := os.Open(outputFile)
@@ -185,7 +176,15 @@ func notifyHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			io.Copy(w, img)
 		}
-	} else {
+	}
+	// push rendered webp to target device if provided
+	if config.ApiKey != "" && config.DeviceID != "" {
+		pushOutput, err := exec.Command(pixletBinary, "push", "--api-token", config.ApiKey, config.DeviceID, outputFile).CombinedOutput()
+		log.Debugf("%s", string(pushOutput))
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
 		w.WriteHeader(http.StatusOK)
 	}
 

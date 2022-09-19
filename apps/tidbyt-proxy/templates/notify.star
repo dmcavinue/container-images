@@ -105,25 +105,17 @@ def main():
                 main_align = "space_evenly",
                 cross_align = "center",
                 children = [
-                    {{if .Icon }}
+                    {{if and .Icon (not .Text)}}
                     render.Box(
-                        width = 12,
-                        height = 12,
+                        width = 32,
+                        height = 32,
                         child = render.Image(
                             src = image,
-                            width=11,
-                            height=11
+                            width=31,
+                            height=31
                         )
                     ),
-                    render.Marquee(
-                        width=50,
-                        height=2,
-                        child=render.Text(content="{{ .Text }}", color="{{ .TextColor }}"),
-                        offset_start=5,
-                        offset_end=38,
-                        align="center"
-                    )
-                    {{else}}
+                    {{else if and .Text (not .Icon)}}
                     render.Marquee( 
                         width=62,
                         height=2,
@@ -132,11 +124,27 @@ def main():
                         offset_end=32,
                         align="center"
                     )
+                    {{else}}
+                    render.Box(
+                        width = 18,
+                        height = 18,
+                        child = render.Image(
+                            src = image,
+                            width=17,
+                            height=17
+                        )
+                    ),
+                    render.Marquee(
+                        width=44,
+                        height=2,
+                        child=render.Text(content="{{ .Text }}", color="{{ .TextColor }}"),
+                        offset_start=18,
+                        offset_end=18,
+                        align="center"
+                    )
                     {{ end }}
                 ],
             ),
         ),
     )
-
-
 {{ end }}
