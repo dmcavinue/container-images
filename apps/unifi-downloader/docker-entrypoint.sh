@@ -1,13 +1,18 @@
 #!/bin/sh
 
 MINUTES=${MINUTES:-5}
-START_TIME=$(date -u -d "$date -${MINUTES} mins" +"%Y-%m-%dT%H:%M:%S")
-CURRENT_TIME=$(date -u -d "$date -0 mins" +"%Y-%m-%dT%H:%M:%S")
+INTERVAL=${INTERVAL:-60}
 OUTPUT_DIR=${OUTPUT_DIR:-"/download"}
 
 echo "host:${UNIFI_HOST}"
 
-protect-archiver \
+while :
+do
+
+  START_TIME=$(date -u -d "$date -${MINUTES} mins" +"%Y-%m-%dT%H:%M:%S")
+  CURRENT_TIME=$(date -u -d "$date -0 mins" +"%Y-%m-%dT%H:%M:%S")
+
+  protect-archiver \
   events \
   --address "${UNIFI_HOST}" \
   --username "${UNIFI_USER}" \
@@ -19,4 +24,7 @@ protect-archiver \
   --download-motion-heatmaps \
   ${OUTPUT_DIR}
 
-find ${OUTPUT_DIR} -type d -mtime +4 -exec rm -r "{}" \;
+  find ${OUTPUT_DIR} -type d -mtime +4 -exec rm -r "{}" \;
+
+	sleep ${INTERVAL}
+done
