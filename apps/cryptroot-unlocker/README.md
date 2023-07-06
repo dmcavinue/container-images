@@ -9,5 +9,5 @@ docker run --rm -it \
   -v <SSH_KEY>:/home/unlocker/.ssh/id_rsa \
   -v ~/.ssh/known_hosts:/home/unlocker/.ssh/known_hosts \
   -u 1000:1000 \
-  dmcavinue/cryptroot-unlocker
+  dmcavinue/cryptroot-unlocker:0.0.1
 ```
