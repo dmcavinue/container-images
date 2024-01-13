@@ -1,5 +1,5 @@
 FROM alpine:3.19
-RUN apk add --no-cache ser2net && \
+RUN apk add --no-cache ser2net socat && \
     adduser --system --disabled-password \
     --home /usr/share/ser2net \
     --uid 1001 --ingroup dialout ser2net
