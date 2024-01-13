@@ -8,4 +8,4 @@ COPY ser2net.conf /etc/ser2net.conf
 
 USER ser2net
 
-CMD echo -n "Starting " && ser2net -v && ser2net -d -c /etc/ser2net.conf
+ENTRYPOINT ["ser2net", "-d", "-c", "/etc/ser2net.conf"]
