@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - 'apps/**/VERSION'      
+      - 'apps/**'
   pull_request:
     branches:
       - master
