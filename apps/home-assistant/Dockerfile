@@ -88,7 +88,7 @@ RUN \
         /root/.cargo \
         /tmp/*
 
-COPY ./apps/home-assistant/entrypoint.sh /entrypoint.sh
+COPY entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/usr/bin/catatonit", "--"]
 CMD ["/entrypoint.sh"]
