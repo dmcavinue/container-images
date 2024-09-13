@@ -1,4 +1,4 @@
-FROM alpine:3.19
+FROM alpine:3
 RUN apk add --no-cache ser2net socat && \
     adduser --system --disabled-password \
     --home /usr/share/ser2net \
