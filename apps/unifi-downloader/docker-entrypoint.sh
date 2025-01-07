@@ -3,6 +3,7 @@
 MINUTES=${MINUTES:-5}
 INTERVAL=${INTERVAL:-60}
 OUTPUT_DIR=${OUTPUT_DIR:-"/download"}
+BACKUP_DIR=${BACKUP_DIR:-"/backup"}
 
 echo "host:${UNIFI_HOST}"
 
@@ -23,6 +24,10 @@ do
   --ignore-failed-downloads \
   --download-motion-heatmaps \
   ${OUTPUT_DIR}
+
+  rclone copy --max-age 10m ${OUTPUT_DIR} ${BACKUP_DIR}/unifi -v
+
+  find ${OUTPUT_DIR} -type d -mtime +4 -exec rm -r "{}" \;
 
 	sleep ${INTERVAL}
 done
