@@ -3,7 +3,7 @@ FROM docker.io/mikefarah/yq:4.34.1 as yq
 FROM ubuntu:22.04
 
 ARG TARGETPLATFORM=linux/amd64
-ARG RUNNER_VERSION=2.316.0
+ARG RUNNER_VERSION=2.322.0
 
 # Docker and Docker Compose arguments
 ARG CHANNEL=stable
