@@ -4,7 +4,7 @@ REPO=$REPO
 TOKEN=$TOKEN
 NAME=$NAME
 
-cd /home/rootless/actions-runner || exit
+cd /runnertmp/ || exit
 ./config.sh --url https://github.com/${REPO} --token ${TOKEN} --name ${NAME}
 
 cleanup() {
