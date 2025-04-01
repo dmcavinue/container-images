@@ -1,6 +1,6 @@
 
 FROM ghcr.io/tronbyt/pixlet:latest AS pixlet
-FROM ghcr.io/tronbyt/server AS tronbyt
+FROM ghcr.io/tronbyt/server:main AS tronbyt
 
 FROM debian:trixie-slim AS runtime
 
