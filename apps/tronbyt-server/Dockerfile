@@ -35,6 +35,11 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=tronbyt /app /app
+
 RUN pybabel compile -d tronbyt_server/translations
+
+RUN useradd -ms /bin/bash -u 10001 tronbyt && chown -R 10001:10001 /app
+
+USER tronbyt 
 
 CMD ["./run"]
