@@ -27,12 +27,17 @@ RUN apt-get update && \
         python3-dotenv \
         python3-flask \
         python3-flask-babel \
+        python3-pip \
         python3-requests \
         python3-tzlocal \
         python3-yaml \
         tzdata \
         tzdata-legacy && \
-    rm -rf /var/lib/apt/lists/*
+        pip3 install --no-cache-dir --root-user-action=ignore --break-system-packages flask-sock && \
+        rm -rf /root/.cache/pip && \
+        apt-get -y purge python3-pip && \
+        apt-get -y autoremove && \
+        rm -rf /var/lib/apt/lists/* /usr/lib/python3/dist-packages/pip /usr/bin/pip3
 
 COPY --from=tronbyt /app /app
 
