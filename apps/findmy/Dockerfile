@@ -13,4 +13,21 @@ RUN apt-get update && apt-get -y --no-install-recommends install sqlite3 \
 && chown -R ${USER_ID}:${USER_ID} ${WORKDIR} \
 && chmod -R g+rwx ${WORKDIR}
 
-USER $USER
+USER ${USER}
+
+WORKDIR ${WORKDIR}
+
+COPY ./requirements.txt /tmp/requirements.txt
+
+RUN git clone https://github.com/Dadoum/pyprovision.git && \
+    cd ./pyprovision && \
+    curl -fsS https://dlang.org/install.sh | bash -s ldc && \
+    . ~/dlang/ldc-1.40.1/activate && \
+    python -m pip install .
+
+RUN git clone https://github.com/Dadoum/anisette-v3-server && \
+    git clone https://github.com/biemster/FindMy && \
+    cd ./FindMy && \
+    pip3 install -r /tmp/requirements.txt && \
+    sqlite3 reports.db 'CREATE TABLE reports (id_short TEXT, timestamp INTEGER, datePublished INTEGER, payload TEXT, id TEXT, statusCode INTEGER, PRIMARY KEY(id_short,timestamp))'
+
