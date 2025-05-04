@@ -1,3 +1,5 @@
+FROM dadoum/anisette-v3-server AS anisette
+
 FROM python:3
 
 ARG USER=findmy
@@ -17,6 +19,7 @@ USER ${USER}
 
 WORKDIR ${WORKDIR}
 
+COPY --from=anisette /opt/anisette-v3-server /usr/local/bin/anisette-v3-server
 COPY ./requirements.txt /tmp/requirements.txt
 
 RUN git clone https://github.com/Dadoum/pyprovision.git && \
@@ -25,9 +28,8 @@ RUN git clone https://github.com/Dadoum/pyprovision.git && \
     . ~/dlang/ldc-1.40.1/activate && \
     python -m pip install .
 
-RUN git clone https://github.com/Dadoum/anisette-v3-server && \
-    git clone https://github.com/biemster/FindMy && \
+RUN git clone https://github.com/biemster/FindMy && \
     cd ./FindMy && \
-    pip3 install -r /tmp/requirements.txt && \
-    sqlite3 reports.db 'CREATE TABLE reports (id_short TEXT, timestamp INTEGER, datePublished INTEGER, payload TEXT, id TEXT, statusCode INTEGER, PRIMARY KEY(id_short,timestamp))'
+    pip3 install -r /tmp/requirements.txt
 
+WORKDIR ${WORKDIR}/FindMy
