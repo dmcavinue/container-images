@@ -1,7 +1,5 @@
 FROM alpine:3
 
-ENV TFTPD_EXTRA_ARGS=""
-
 RUN apk add --no-cache tftp-hpa
 
 RUN mkdir /tmp/syslinux && \
@@ -19,9 +17,18 @@ RUN mkdir /tmp/syslinux && \
 
 #COPY pxelinux.cfg /tftpboot/pxelinux.cfg
 
-EXPOSE 1069/udp
+# Support clients that use backslash instead of forward slash.
+COPY mapfile /tftpboot/
+
+EXPOSE 69/udp
 VOLUME /tftpboot/boot
 
-CMD set -eu ;\
-    [ -d /tftpboot/boot/root ] && cp -af /tftpboot/boot/root/* /tftpboot ;\
-    exec in.tftpd -L -vvv -u ftp --secure --address "0.0.0.0:69" $TFTPD_EXTRA_ARGS /tftpboot
+RUN adduser --system --disabled-password \
+    --home /usr/share/tftp \
+    --uid 10001 tftp
+
+COPY start /usr/sbin/start
+RUN chmod +x /usr/sbin/start
+
+ENTRYPOINT ["/usr/sbin/start"]
+CMD ["-L", "--verbose", "-m", "/tftpboot/mapfile", "-u", "tftp", "--secure", "/tftpboot"]
