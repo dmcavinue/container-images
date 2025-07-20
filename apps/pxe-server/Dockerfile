@@ -17,7 +17,7 @@ RUN mkdir /tmp/syslinux && \
     ln -s ../boot /tftpboot/syslinux/efi64/boot && \
     ln -s ../pxelinux.cfg /tftpboot/syslinux/efi64/pxelinux.cfg
 
-COPY pxelinux.cfg /tftpboot/pxelinux.cfg
+#COPY pxelinux.cfg /tftpboot/pxelinux.cfg
 
 EXPOSE 1069/udp
 VOLUME /tftpboot/boot
