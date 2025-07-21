@@ -31,4 +31,4 @@ COPY start /usr/sbin/start
 RUN chmod +x /usr/sbin/start
 
 ENTRYPOINT ["/usr/sbin/start"]
-CMD ["-L", "--verbose", "-m", "/tftpboot/mapfile", "-u", "tftp", "--secure", "/tftpboot"]
+CMD ["-L", "--verbose", "-m", "/tftpboot/mapfile", "-u", "tftp", "--secure", "--blocksize", "1468", "/tftpboot"]
