@@ -8,6 +8,7 @@ source "${VENV_FOLDER}/bin/activate"
 
 site_packages=$(python -c "import sysconfig; print(sysconfig.get_path('purelib'))")
 uv pip install --no-index --find-links="${site_packages}" uv
+uv pip install bleak
 
 ln -sf /proc/self/fd/1 /config/home-assistant.log
 

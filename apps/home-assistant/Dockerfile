@@ -4,7 +4,7 @@ ARG ARCH=amd64
 FROM ghcr.io/home-assistant/${ARCH}-base-python:3.13-alpine3.22
 ARG TARGETARCH
 ARG ARCH=${TARGETARCH/arm64/aarch64}
-ARG VERSION
+ARG VERSION=2025.8.0
 
 ENV \
     CRYPTOGRAPHY_DONT_BUILD_RUST=1 \
