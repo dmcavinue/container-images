@@ -4,20 +4,19 @@ name: build
 # - push to master when VERSION files change
 # - PRs targeting master when VERSION files change
 when:
-  event:
-    - push
-  branch: master
-  path:
-    include:
-      - apps/**/VERSION
+  - event: push
+    branch: master
+    path:
+      include:
+        - apps/**/VERSION
 
 steps:
-  checkout:
+- checkout:
     image: woodpeckerci/plugin-git
     settings:
       depth: 0
 
-  login_ghcr:
+- login_ghcr:
     image: docker:27
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -29,7 +28,7 @@ steps:
     commands:
       - echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
 
-  build_and_push:
+- build_and_push:
     image: docker:27
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
