@@ -6,78 +6,82 @@ name: build
 when:
   - event: push
     branch: master
-    path:
-      include:
-        - apps/**/VERSION
+    # path:
+    #   include:
+    #     - apps/**/VERSION
 
 steps:
-- checkout:
-    image: woodpeckerci/plugin-git
-    settings:
-      depth: 0
-
-- login_ghcr:
-    image: docker:27
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      GHCR_USERNAME:
-        from_secret: ghcr_username
-      GHCR_TOKEN:
-        from_secret: ghcr_token
+  - name: build
+    image: debian
     commands:
-      - echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+      - echo "This is the build step"
+# - checkout:
+#     image: woodpeckerci/plugin-git
+#     settings:
+#       depth: 0
 
-- build_and_push:
-    image: docker:27
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      GHCR_USERNAME:
-        from_secret: ghcr_username
-    commands:
-      - |
-        set -euo pipefail
+# - login_ghcr:
+#     image: docker:27
+#     volumes:
+#       - /var/run/docker.sock:/var/run/docker.sock
+#     environment:
+#       GHCR_USERNAME:
+#         from_secret: ghcr_username
+#       GHCR_TOKEN:
+#         from_secret: ghcr_token
+#     commands:
+#       - echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
 
-        # Woodpecker exposes commit SHA as CI_COMMIT_SHA; for push, "before" is usually CI_COMMIT_BEFORE.
-        # Fallbacks keep this working across Woodpecker versions/providers.
-        SHA="${CI_COMMIT_SHA:-${CI_BUILD_COMMIT:-}}"
-        BEFORE="${CI_COMMIT_BEFORE:-${CI_PREV_COMMIT_SHA:-}}"
+# - build_and_push:
+#     image: docker:27
+#     volumes:
+#       - /var/run/docker.sock:/var/run/docker.sock
+#     environment:
+#       GHCR_USERNAME:
+#         from_secret: ghcr_username
+#     commands:
+#       - |
+#         set -euo pipefail
 
-        if [ -z "${SHA}" ]; then
-          echo "Missing commit SHA env (CI_COMMIT_SHA/CI_BUILD_COMMIT)."
-          exit 1
-        fi
+#         # Woodpecker exposes commit SHA as CI_COMMIT_SHA; for push, "before" is usually CI_COMMIT_BEFORE.
+#         # Fallbacks keep this working across Woodpecker versions/providers.
+#         SHA="${CI_COMMIT_SHA:-${CI_BUILD_COMMIT:-}}"
+#         BEFORE="${CI_COMMIT_BEFORE:-${CI_PREV_COMMIT_SHA:-}}"
 
-        # If BEFORE isn't available (e.g., first push), just look at current tree.
-        if [ -z "${BEFORE}" ] || [ "${BEFORE}" = "0000000000000000000000000000000000000000" ]; then
-          VERSION_FILES="$(git ls-files 'apps/**/VERSION' || true)"
-        else
-          VERSION_FILES="$(git diff-tree --no-commit-id --name-only -r "${SHA}" "${BEFORE}" | grep 'VERSION$' || true)"
-        fi
+#         if [ -z "${SHA}" ]; then
+#           echo "Missing commit SHA env (CI_COMMIT_SHA/CI_BUILD_COMMIT)."
+#           exit 1
+#         fi
 
-        if [ -z "${VERSION_FILES}" ]; then
-          echo "No VERSION files changed; nothing to do."
-          exit 0
-        fi
+#         # If BEFORE isn't available (e.g., first push), just look at current tree.
+#         if [ -z "${BEFORE}" ] || [ "${BEFORE}" = "0000000000000000000000000000000000000000" ]; then
+#           VERSION_FILES="$(git ls-files 'apps/**/VERSION' || true)"
+#         else
+#           VERSION_FILES="$(git diff-tree --no-commit-id --name-only -r "${SHA}" "${BEFORE}" | grep 'VERSION$' || true)"
+#         fi
 
-        for versionFilePath in ${VERSION_FILES}; do
-          folder="${versionFilePath%/VERSION}"
-          IMAGE_NAME="${folder##*/}"
+#         if [ -z "${VERSION_FILES}" ]; then
+#           echo "No VERSION files changed; nothing to do."
+#           exit 0
+#         fi
 
-          tmpName="image-$RANDOM"
-          VERSION="$(cat "$versionFilePath")"
+#         for versionFilePath in ${VERSION_FILES}; do
+#           folder="${versionFilePath%/VERSION}"
+#           IMAGE_NAME="${folder##*/}"
 
-          docker build "$folder" \
-            --file "$folder/Dockerfile" \
-            --tag "$tmpName" \
-            --build-arg "VERSION=$VERSION"
+#           tmpName="image-$RANDOM"
+#           VERSION="$(cat "$versionFilePath")"
 
-          IMAGE_ID="ghcr.io/${GHCR_USERNAME}/${IMAGE_NAME}"
+#           docker build "$folder" \
+#             --file "$folder/Dockerfile" \
+#             --tag "$tmpName" \
+#             --build-arg "VERSION=$VERSION"
 
-          echo "IMAGE_ID=$IMAGE_ID"
-          echo "VERSION=$VERSION"
+#           IMAGE_ID="ghcr.io/${GHCR_USERNAME}/${IMAGE_NAME}"
 
-          docker tag "$tmpName" "$IMAGE_ID:$VERSION"
-          docker push "$IMAGE_ID:$VERSION"
-        done
+#           echo "IMAGE_ID=$IMAGE_ID"
+#           echo "VERSION=$VERSION"
+
+#           docker tag "$tmpName" "$IMAGE_ID:$VERSION"
+#           docker push "$IMAGE_ID:$VERSION"
+#         done
