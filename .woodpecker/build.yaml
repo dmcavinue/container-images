@@ -1,82 +1,15 @@
 when:
   - event: push
-    branch: master
-    # path:
-    #   include:
-    #     - apps/**/VERSION
+    branch: main
 
 steps:
   - name: build
     image: debian
     commands:
       - echo "This is the build step"
-# - checkout:
-#     image: woodpeckerci/plugin-git
-#     settings:
-#       depth: 0
-
-# - login_ghcr:
-#     image: docker:27
-#     volumes:
-#       - /var/run/docker.sock:/var/run/docker.sock
-#     environment:
-#       GHCR_USERNAME:
-#         from_secret: ghcr_username
-#       GHCR_TOKEN:
-#         from_secret: ghcr_token
-#     commands:
-#       - echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
-
-# - build_and_push:
-#     image: docker:27
-#     volumes:
-#       - /var/run/docker.sock:/var/run/docker.sock
-#     environment:
-#       GHCR_USERNAME:
-#         from_secret: ghcr_username
-#     commands:
-#       - |
-#         set -euo pipefail
-
-#         # Woodpecker exposes commit SHA as CI_COMMIT_SHA; for push, "before" is usually CI_COMMIT_BEFORE.
-#         # Fallbacks keep this working across Woodpecker versions/providers.
-#         SHA="${CI_COMMIT_SHA:-${CI_BUILD_COMMIT:-}}"
-#         BEFORE="${CI_COMMIT_BEFORE:-${CI_PREV_COMMIT_SHA:-}}"
-
-#         if [ -z "${SHA}" ]; then
-#           echo "Missing commit SHA env (CI_COMMIT_SHA/CI_BUILD_COMMIT)."
-#           exit 1
-#         fi
-
-#         # If BEFORE isn't available (e.g., first push), just look at current tree.
-#         if [ -z "${BEFORE}" ] || [ "${BEFORE}" = "0000000000000000000000000000000000000000" ]; then
-#           VERSION_FILES="$(git ls-files 'apps/**/VERSION' || true)"
-#         else
-#           VERSION_FILES="$(git diff-tree --no-commit-id --name-only -r "${SHA}" "${BEFORE}" | grep 'VERSION$' || true)"
-#         fi
-
-#         if [ -z "${VERSION_FILES}" ]; then
-#           echo "No VERSION files changed; nothing to do."
-#           exit 0
-#         fi
-
-#         for versionFilePath in ${VERSION_FILES}; do
-#           folder="${versionFilePath%/VERSION}"
-#           IMAGE_NAME="${folder##*/}"
-
-#           tmpName="image-$RANDOM"
-#           VERSION="$(cat "$versionFilePath")"
-
-#           docker build "$folder" \
-#             --file "$folder/Dockerfile" \
-#             --tag "$tmpName" \
-#             --build-arg "VERSION=$VERSION"
-
-#           IMAGE_ID="ghcr.io/${GHCR_USERNAME}/${IMAGE_NAME}"
-
-#           echo "IMAGE_ID=$IMAGE_ID"
-#           echo "VERSION=$VERSION"
-
-#           docker tag "$tmpName" "$IMAGE_ID:$VERSION"
-#           docker push "$IMAGE_ID:$VERSION"
-#         done
+      - echo "binary-data-123" > executable
+  - name: a-test-step
+    image: golang:1.16
+    commands:
+      - echo "Testing ..."
+      - ./executable
