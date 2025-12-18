@@ -6,7 +6,6 @@ name: build
 when:
   event:
     - push
-    - pull_request
   branch: master
   path:
     include:
